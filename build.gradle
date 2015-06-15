@@ -11,7 +11,9 @@ ext {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
+    jcenter()
 }
 
 dependencies {
@@ -35,3 +37,19 @@ uploadArchives {
 task wrapper(type: Wrapper) {
 	gradleVersion = '2.4'
 }
+
+configurations {
+    published
+}
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+    version = rootProject.version
+}
+
+artifacts {
+    published sourceJar
+}
+
+jar.dependsOn sourceJar
