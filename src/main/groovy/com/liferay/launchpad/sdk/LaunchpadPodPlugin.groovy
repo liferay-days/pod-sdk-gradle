@@ -71,16 +71,20 @@ project.task('pod-link', dependsOn: 'podLibs',
 }
 """
 
-		def fileName = name
-		if (fileName.startsWith('pod-')) fileName = fileName.substring(4)
-		def target = prj.rootDir.absolutePath + '/' + name + '/build/' + fileName + ".pod.json"
+		def podName = name
+		if (podName.startsWith('pod-')) {
+			podName = podName.substring(4)
+		}
+		def fileName = podName + ".pod.json"
+
+		def target = prj.rootDir.absolutePath + '/' + name + '/build/' + fileName
 		def file = new File(target)
 		file.write data
 
-		file = new File(System.getProperty("user.home"), 'launchpad')
+		file = new File(System.getProperty("user.home") + '/launchpad', fileName)
 		file.write data
 
-		println "POD $name linked"
+		println "\nPOD \"$podName\" linked."
 	}
 }
 
