@@ -16,7 +16,11 @@ class LaunchpadPodPlugin implements Plugin<Project> {
  * Prepares pod dependencies (libraries).
  */
 project.task('podLibs', type: Copy) {
-	from (project.configurations.compile + project.configurations.runtime - project.configurations.provided) into 'build/podlibs'
+	from (project.configurations.compile + project.configurations.runtime - project.configurations.provided)
+	into 'build/podlibs'
+	exclude 'sdk-*.jar'
+	exclude 'api-*.jar'
+	exclude 'common-*.jar'
 }
 
 /**
