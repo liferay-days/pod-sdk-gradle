@@ -1,5 +1,8 @@
-package com.liferay.launchpad.sdk;
+package com.liferay.launchpad.sdk
 
+import jodd.http.HttpRequest
+import jodd.http.HttpResponse
+import jodd.io.FileUtil;
 import org.gradle.api.*;
 import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.bundling.*;
@@ -21,7 +24,7 @@ project.task('podLibs', type: Copy) {
  * Builds pod bundle.
  */
 project.task('pod', type: Zip, dependsOn: 'jar', overwrite: true,
-		description: 'Builds POD bundle distribution', group: 'Launchpad Pod') {
+		description: 'Builds POD bundle', group: 'Launchpad Pod') {
 
 	baseName = project.name
 
@@ -47,12 +50,28 @@ project.task('pod', type: Zip, dependsOn: 'jar', overwrite: true,
 
 	from (project.configurations.compile - project.configurations.provided) into 'lib'
 	from project.jar.outputs.files into 'lib'
+
+	doLast { task ->
+		def prj = task.project
+		def name = task.project.name
+		def podName = name
+		if (podName.startsWith('pod-')) {
+			podName = podName.substring(4)
+		}
+
+		def podFile = new File(prj.rootDir.absolutePath + '/' + name + '/build/distributions/' + podName + '.pod')
+		def targetDir = new File(System.getProperty("user.home"), 'launchpad')
+
+		FileUtil.copyFileToDir(podFile, targetDir)
+
+		println "\nPOD \"$podName\" created."
+	}
 }
 
 /**
  * Prepares data for fast development.
  */
-project.task('pod-link', dependsOn: 'podLibs',
+project.task('link', dependsOn: 'podLibs',
 		description: 'Enables POD fast development', group: 'Launchpad Pod') {
 	doLast { task ->
 		def prj = task.project
@@ -70,15 +89,14 @@ project.task('pod-link', dependsOn: 'podLibs',
 	]
 }
 """
-
 		def podName = name
 		if (podName.startsWith('pod-')) {
 			podName = podName.substring(4)
 		}
+
 		def fileName = podName + ".pod.json"
 
-		def target = prj.rootDir.absolutePath + '/' + name + '/build/' + fileName
-		def file = new File(target)
+		def file = new File(prj.rootDir.absolutePath + '/' + name + '/build/' + fileName)
 		file.write data
 
 		file = new File(System.getProperty("user.home") + '/launchpad', fileName)
@@ -91,22 +109,73 @@ project.task('pod-link', dependsOn: 'podLibs',
 /**
  * Removes fast development config.
  */
-project.task('pod-unlink',
+project.task('unlink',
 	description: 'Disables POD fast development', group: 'Launchpad Pod') {
 
 	doLast { task ->
 		def name = task.project.name
-
 		def podName = name
 		if (podName.startsWith('pod-')) {
 			podName = podName.substring(4)
 		}
+
 		def fileName = podName + ".pod.json"
 
 		def file = new File(System.getProperty("user.home") + '/launchpad', fileName)
 		file.delete()
 
 		println "\nPOD \"$podName\" unlinked."
+	}
+}
+
+/**
+ * Deploys a POD.
+ */
+project.task('deploy',
+	description: 'Deploys POD', group: 'Launchpad Pod') {
+
+	doLast { task ->
+		def name = task.project.name
+		def podName = name
+		if (podName.startsWith('pod-')) {
+			podName = podName.substring(4)
+		}
+
+		HttpResponse response =
+			HttpRequest
+			.get('http://127.0.0.1:8080/_admin')
+			.query('cmd', 'deploy')
+			.query('target', podName)
+			.timeout(5000)
+			.send();
+
+		int statusCode = response.statusCode();
+
+		println "\nDeploy POD \"$podName\" : $statusCode"
+	}
+}
+
+project.task('undeploy',
+	description: 'Undeploys POD', group: 'Launchpad Pod') {
+
+	doLast { task ->
+		def name = task.project.name
+		def podName = name
+		if (podName.startsWith('pod-')) {
+			podName = podName.substring(4)
+		}
+
+		HttpResponse response =
+			HttpRequest
+			.get('http://127.0.0.1:8080/_admin')
+			.query('cmd', 'undeploy')
+			.query('target', podName)
+			.timeout(5000)
+			.send();
+
+		int statusCode = response.statusCode();
+
+		println "\nUndeploy POD \"$podName\" : $statusCode"
 	}
 }
 
