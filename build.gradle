@@ -19,10 +19,11 @@ repositories {
 dependencies {
     compile gradleApi()
     compile localGroovy()
+    compile "org.jodd:jodd-http:3.6.6"
 }
 
 group='com.liferay.launchpad'
-version='0.1.0'
+version='0.1.1'
 
 apply from: "${gradleScriptDir}/bintray.gradle"
 
