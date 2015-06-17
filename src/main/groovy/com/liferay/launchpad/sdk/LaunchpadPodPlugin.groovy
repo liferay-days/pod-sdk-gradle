@@ -16,8 +16,7 @@ class LaunchpadPodPlugin implements Plugin<Project> {
  * Prepares pod dependencies (libraries).
  */
 project.task('podLibs', type: Copy) {
-	from (project.configurations.compile + project.configurations.runtime - project.configurations.provided) into 'lib'
-	into 'build/podlibs'
+	from (project.configurations.compile + project.configurations.runtime - project.configurations.provided) into 'build/podlibs'
 }
 
 /**
@@ -49,8 +48,9 @@ project.task('pod', type: Zip, dependsOn: ['jar', 'podLibs'], overwrite: true,
 	}
 
 	from ('build/podlibs') {
-		into 'lib'
+		into '/lib'
 	}
+	from project.jar.outputs.files into 'lib'
 
 	doLast { task ->
 		def prj = task.project
