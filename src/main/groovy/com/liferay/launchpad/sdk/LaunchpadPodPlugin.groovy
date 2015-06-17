@@ -9,15 +9,10 @@ class LaunchpadPodPlugin implements Plugin<Project> {
 
 //-------------------------------------------------------------------
 
-//jar {
-//	baseName = 'launchpad'
-//	appendix = project.name
-//}
-
 /**
- * Prepares pod dependencies.
+ * Prepares pod dependencies (libraries).
  */
-project.task('bundleLibs', type: Copy) {
+project.task('podLibs', type: Copy) {
 	from (project.configurations.compile + project.configurations.runtime - project.configurations.provided) into 'lib'
 	into 'build/podlibs'
 }
@@ -25,7 +20,9 @@ project.task('bundleLibs', type: Copy) {
 /**
  * Builds pod bundle.
  */
-project.task('bundle', type: Zip, dependsOn: 'jar', overwrite: true) {
+project.task('pod', type: Zip, dependsOn: 'jar', overwrite: true,
+		description: 'Builds POD bundle distribution', group: 'Launchpad Pod') {
+
 	baseName = project.name
 
 	if (baseName.startsWith('pod-')) baseName = baseName.substring(4);
@@ -55,7 +52,8 @@ project.task('bundle', type: Zip, dependsOn: 'jar', overwrite: true) {
 /**
  * Prepares data for fast development.
  */
-project.task('fastdev', dependsOn: 'bundleLibs') {
+project.task('pod-link', dependsOn: 'podLibs',
+		description: 'Enables POD fast development', group: 'Launchpad Pod') {
 	doLast { task ->
 		def prj = task.project
 		def name = task.project.name
@@ -79,11 +77,10 @@ project.task('fastdev', dependsOn: 'bundleLibs') {
 		def file = new File(target)
 		file.write data
 
-		println ""
-		println target
-		println "----------"
-		println data
-		println "----------"
+		file = new File(System.getProperty("user.home"), 'launchpad')
+		file.write data
+
+		println "POD $name linked"
 	}
 }
 
