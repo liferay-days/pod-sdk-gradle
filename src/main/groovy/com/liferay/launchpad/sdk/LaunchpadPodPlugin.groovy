@@ -23,7 +23,7 @@ project.task('podLibs', type: Copy) {
 /**
  * Builds pod bundle.
  */
-project.task('pod', type: Zip, dependsOn: 'jar', overwrite: true,
+project.task('pod', type: Zip, dependsOn: ['jar', 'podLibs'], overwrite: true,
 		description: 'Builds POD bundle', group: 'Launchpad Pod') {
 
 	baseName = project.name
@@ -48,8 +48,9 @@ project.task('pod', type: Zip, dependsOn: 'jar', overwrite: true,
 		into '/'
 	}
 
-	from (project.configurations.compile - project.configurations.provided) into 'lib'
-	from project.jar.outputs.files into 'lib'
+	from ('build/podlibs') {
+		into 'lib'
+	}
 
 	doLast { task ->
 		def prj = task.project
