@@ -88,6 +88,28 @@ project.task('pod-link', dependsOn: 'podLibs',
 	}
 }
 
+/**
+ * Removes fast development config.
+ */
+project.task('pod-unlink',
+	description: 'Disables POD fast development', group: 'Launchpad Pod') {
+
+	doLast { task ->
+		def name = task.project.name
+
+		def podName = name
+		if (podName.startsWith('pod-')) {
+			podName = podName.substring(4)
+		}
+		def fileName = podName + ".pod.json"
+
+		def file = new File(System.getProperty("user.home") + '/launchpad', fileName)
+		file.delete()
+
+		println "\nPOD \"$podName\" unlinked."
+	}
+}
+
 //-------------------------------------------------------------------
 
     }
