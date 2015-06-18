@@ -4,7 +4,8 @@ Gradle plugin for Launchpad Pods.
 
 ## Provided scope
 
-Gradle does not have `provided` scope out-of-box, so we must enable it:
+This plugin is aware of `provided` scope. Gradle does not offer `provided` scope
+out-of-box. It can be defined like this:
 
 	configurations {
 		provided
@@ -16,8 +17,12 @@ Provided scope is needed for following dependencies:
 + `com.liferay.launchpad:sdk`
 + `com.liferay.launchpad:api`
 
-However, even if you put these as `compile` dependency, the plugin will ignore
-these jars and they will not be bundled in the pod.
+### Provided scope is optional
+
+Even if you put these dependencies as `compile` dependency and do not define
+`provided` scope - everything will work! Plugin will ignore these jars and
+they will not be bundled in the pod.
+
 
 ## Usage
 
@@ -29,7 +34,7 @@ buildscript {
 		jcenter()
     }
     dependencies {
-        classpath group: 'com.liferay.launchpad', name: 'sdk-gradle', version: '0.1.1'
+        classpath group: 'com.liferay.launchpad', name: 'sdk-gradle', version: '0.1.2'
     }
 }
 

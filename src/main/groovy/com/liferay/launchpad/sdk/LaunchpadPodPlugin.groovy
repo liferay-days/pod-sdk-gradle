@@ -3,7 +3,7 @@ package com.liferay.launchpad.sdk
 import jodd.http.HttpRequest
 import jodd.http.HttpResponse
 import jodd.io.FileUtil;
-import org.gradle.api.*;
+import org.gradle.api.*
 import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.bundling.*;
 
@@ -16,6 +16,15 @@ class LaunchpadPodPlugin implements Plugin<Project> {
  * Prepares pod dependencies (libraries).
  */
 project.task('podLibs', type: Copy) {
+	def hasProvided = false
+	if (project.configurations.find { it.name == 'provided' }) {
+		hasProvided = true
+	}
+
+	if (!hasProvided) {
+		project.configurations.create('provided')
+	}
+
 	from (project.configurations.compile + project.configurations.runtime - project.configurations.provided)
 	into 'build/podlibs'
 	exclude 'sdk-*.jar'
@@ -58,13 +67,16 @@ project.task('pod', type: Zip, dependsOn: ['jar', 'podLibs'], overwrite: true,
 
 	doLast { task ->
 		def prj = task.project
+		def rootProj = prj.getRootProject()
+		def isRoot = (rootProj == prj)
 		def name = task.project.name
 		def podName = name
 		if (podName.startsWith('pod-')) {
 			podName = podName.substring(4)
 		}
 
-		def podFile = new File(prj.rootDir.absolutePath + '/' + name + '/build/distributions/' + podName + '.pod')
+		def podFileName = prj.rootDir.absolutePath + (isRoot ? '' : '/' + name)  + '/build/distributions/' + podName + '.pod'
+		def podFile = new File(podFileName)
 		def targetDir = new File(System.getProperty("user.home"), 'launchpad')
 
 		FileUtil.copyFileToDir(podFile, targetDir)
