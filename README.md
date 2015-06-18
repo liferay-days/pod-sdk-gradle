@@ -11,9 +11,13 @@ Gradle does not have `provided` scope out-of-box, so we must enable it:
 		compile.extendsFrom provided
 	}
 
-Provided scope is needed for only `pod-sdk` module, that is provided by
-Launchpad runtime.
+Provided scope is needed for following dependencies:
 
++ `com.liferay.launchpad:sdk`
++ `com.liferay.launchpad:api`
+
+However, even if you put these as `compile` dependency, the plugin will ignore
+these jars and they will not be bundled in the pod.
 
 ## Usage
 
@@ -22,17 +26,18 @@ Enable plugin:
 ```
 buildscript {
     repositories {
-        mavenLocal()	// put here the maven repo!
+		jcenter()
     }
     dependencies {
-        classpath group: 'com.liferay.launchpad', name: 'pod', version: '1.0-SNAPSHOT'
+        classpath group: 'com.liferay.launchpad', name: 'sdk-gradle', version: '0.1.1'
     }
 }
+
 ```
 
 Apply plugin:
 
-	apply plugin: 'com.liferay.launchpad.pod'
+	apply plugin: 'com.liferay.launchpad.sdk'
 
 That is all.
 
@@ -41,19 +46,26 @@ That is all.
 
 This plugin adds the following tasks:
 
-### bundle
+### pod
 
-Task `bundle` creates the pod bundle in `build/distributions` folder.
-Pod bundle extension is `pod`. This file can be copied to Launchpad folder
-and deployed to Launchpad.
+Task `pod` task creates pod bundle in `build/distributions` folder and in
+`~/launchpad`. Pod bundle extension is `pod`.
 
-### fastdev
+### link
 
-Task `fastdev` prepares everything for the fast development. It does the
-following:
+Task `link` does not create the pod bundle, but prepares the configuration so to
+enable _fast_ development. It creates pod configuration file in `~/launchpad`
+folder.
 
-+ prepares all JAR files needed for the bundle
-+ creates `build/*.pod.json` file that can be copied to Launchpad folder to
-  enable fast development
-+ outputs the content of created `build/*.pod.json` file.
+### unlink
 
+Task `unlink` removes configuration file from the `~/launchpad` folder,
+disabling _fast_ development.
+
+### deploy
+
+Sends HTTP request to server to deploy a pod. Pod is previously built or linked.
+
+### undeploy
+
+Sends HTTP request to server to undeploy a pod. Pod bundle file is not removed.
